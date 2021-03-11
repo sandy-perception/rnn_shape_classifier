@@ -72,12 +72,14 @@ def save_incremental_shape_imgs(shape_dir,vect_instructions,shape_id):
 def generate_intermediate_images(category_lines,cols=5):
 	temp = "temp"
 	if os.path.exists(temp):
-		shutil.rmtree("temp")
-	else:
-		os.makedirs(temp)
+		shutil.rmtree(temp)
+
+	os.makedirs(temp)
+
 	shapes_list = []
-	category_list =
+	category_list = []
 	for category, samples in category_lines.items():
+		print("Generating images for :",category)
 		category_list.append(category)
 		shape_dir = os.path.join(temp, category)
 		os.makedirs(shape_dir)
@@ -88,25 +90,34 @@ def generate_intermediate_images(category_lines,cols=5):
 			shape_id = category + "_" + str(j)
 			paths = save_incremental_shape_imgs(shape_dir, sample, shape_id)
 			path_list.append(paths)
+			j+=1
 
-		shapes_list.append(shapes_list)
+		shapes_list.append(path_list)
 
 	return shapes_list,category_list
 
 def save_collages(shapes_list,cols,category_list):
 
-	
+	temp = "temp_gif"
+	if os.path.exists(temp):
+		shutil.rmtree(temp)
+
+	os.makedirs(temp)
 
 	rows = len(shapes_list)
-	grid_indices = np.zeros((cols,rows),dtype=int)
-	max_indices = np.zeros((cols, rows), dtype=int)
+	grid_indices = np.zeros((rows,cols),dtype=int)
+	max_indices = np.zeros((rows, cols), dtype=int)
 
 	for i in range(rows):
 		path_list = shapes_list[i]
 		for j in range(cols):
 			max_indices[i,j] = len(path_list[j])
-
-	while True :
+	index=0
+	while not np.array_equal(max_indices,grid_indices) :
+		print("max_indices array ")
+		print(max_indices)
+		print("grid_indices array ")
+		print(grid_indices)
 		fig = plt.figure(figsize=(cols * 4, rows * 3))
 		for i in range(rows):
 			for j in range(cols):
@@ -114,15 +125,20 @@ def save_collages(shapes_list,cols,category_list):
 				   grid_indices[i,j] += 1
 
 				path_index = grid_indices[i,j] - 1
-				im_index = i * cols + j
+				im_index = i * cols + j + 1
 				im_path = shapes_list[i][j][path_index]
+				print("im_path :", im_path)
 				im = cv2.imread(im_path)
 				ax = plt.subplot(rows, cols, im_index)
-				ax.plot(im)
 				ax.set_title(category_list[i])
+				ax.imshow(im)
 
-		fig.savefig('path/to/save/image/to.png')  # save the figure to file
+		path=os.path.join(temp,str(index)+".png")
+		index +=1
+		fig.savefig(path)  # save the figure to file
 		plt.close(fig)
+
+
 
 def get_sample_gif(category_lines,cols=5):
 
